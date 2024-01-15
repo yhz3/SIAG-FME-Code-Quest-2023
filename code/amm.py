@@ -47,7 +47,7 @@ class amm():
 
     def swap_x_to_y(self, x, quote=False):
         """
-        swap token-X for token-Y across all pools simulataneously
+        swap token-X for token-Y across all pools simultaneously
 
         Parameters
         ----------
@@ -64,10 +64,13 @@ class amm():
             the amount of token-Y you receive from each pool.
 
         """
+        length = len(self.phi)
+        array_one = np.array([1]*length)
+        y = (x*(array_one - self.phi)*self.Ry)/(self.Rx + (array_one - self.phi)*x)
 
-        # ********************
-        #     fill in code
-        # ********************
+        if not quote:
+            self.Rx += x
+            self.Ry -= y
 
         return y
 
@@ -90,10 +93,14 @@ class amm():
             the amount of token-X you receive from each pool.
 
         """
-        
-        # ********************
-        #     fill in code
-        # ********************
+        length = len(self.phi)
+        array_one = np.array([1] * length)
+
+        x = (y * (array_one - self.phi) * self.Rx) / (self.Ry + (array_one - self.phi) * y)
+
+        if not quote:
+            self.Rx -= x
+            self.Ry += y
 
         return x
 
@@ -313,3 +320,16 @@ class amm():
             event_direction_t[k] = event_direction
 
         return pools, Rx_t, Ry_t, v_t, event_type_t, event_direction_t
+
+
+if __name__ == '__main__':
+    Rx0 = np.array([100, 100, 100], float)
+    Ry0 = np.array([1000, 1000, 1000], float)
+    phi = np.array([0.003, 0.003, 0.003], float)
+    pools = amm(Rx=Rx0, Ry=Ry0, phi=phi)
+
+    y = pools.swap_x_to_y([1, 0.5, 0.1], quote=False)
+
+    print(y)
+    print(pools.Rx)
+    print(pools.Ry)
