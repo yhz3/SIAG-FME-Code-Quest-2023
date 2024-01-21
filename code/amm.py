@@ -145,6 +145,15 @@ class amm():
         #     fill in code
         # ********************
 
+
+        theta = 1 + (2 - self.phi)/(2 * (1 - self.phi)*x) * self.Rx * (1 - np.sqrt(1 + 4 * (x*(1-self.phi))/(self.Rx * (2 - self.phi)**2)))
+
+        x_new = (1-theta)*x
+
+        y = self.swap_x_to_y(x_new)
+
+        l = self.mint(x_new, y)
+
         return l
     
     def burn_and_swap(self, l):
@@ -166,6 +175,13 @@ class amm():
         # ********************
         #     fill in code
         # ********************
+
+        x, y = self.burn(l)
+
+        best_price = np.max(self.swap_y_to_x(np.sum(np.square(y)), quote=True))
+        
+        total_x = self.swap_y_to_x(y, best_price)
+
 
         return total_x
 
