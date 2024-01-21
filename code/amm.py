@@ -125,9 +125,16 @@ class amm():
         for k in range(len(self.Rx)):
             assert np.abs(((x[k]/y[k])-self.Rx[k]/self.Ry[k])) < 1e-9, "pool " + str(k) + " has incorrect submission of tokens"
 
-        # ********************
-        #     fill in code
-        # ********************
+
+        # Upon submitting the correct amount of coins, the LP trader will then receive LP coins in the amount equal to
+        # l = (x/Rx)L = (y/Ry)L
+        # where L is the outstanding amount of LP coins issued by the pool prior to trader’s LP mint event.
+        l = (x / self.Rx) * self.L
+
+        # Further, after the LP mint event the reserves and outstanding LP coins are updated as follows
+        self.Rx += x
+        self.Ry += y
+        self.L += l
 
         return l
 
@@ -197,9 +204,13 @@ class amm():
         for k in range(len(self.L)):
             assert l[k] <= self.l[k], "you have insufficient LP tokens"
 
-        # ********************
-        #     fill in code
-        # ********************
+        x = self.l/self.L * self.Rx
+        y = self.l/self.L * self.Ry
+
+        # Update Rx, Ry, and L
+        self.Rx -= x
+        self.Ry -= y
+        self.L -= l
         
         return x, y
 
