@@ -135,6 +135,7 @@ class amm():
         self.Rx += x
         self.Ry += y
         self.L += l
+        self.l += l
 
         return l
 
@@ -227,6 +228,7 @@ class amm():
         self.Rx -= x
         self.Ry -= y
         self.L -= l
+        self.l -= l
         
         return x, y
 
