@@ -47,7 +47,7 @@ class amm():
 
     def swap_x_to_y(self, x, quote=False):
         """
-        swap token-X for token-Y across all pools simulataneously
+        swap token-X for token-Y across all pools simultaneously
 
         Parameters
         ----------
@@ -64,10 +64,13 @@ class amm():
             the amount of token-Y you receive from each pool.
 
         """
+        length = len(self.phi)
+        array_one = np.array([1]*length)
+        y = (x*(array_one - self.phi)*self.Ry)/(self.Rx + (array_one - self.phi)*x)
 
-        # ********************
-        #     fill in code
-        # ********************
+        if not quote:
+            self.Rx += x
+            self.Ry -= y
 
         return y
 
@@ -90,10 +93,14 @@ class amm():
             the amount of token-X you receive from each pool.
 
         """
-        
-        # ********************
-        #     fill in code
-        # ********************
+        length = len(self.phi)
+        array_one = np.array([1] * length)
+
+        x = (y * (array_one - self.phi) * self.Rx) / (self.Ry + (array_one - self.phi) * y)
+
+        if not quote:
+            self.Rx -= x
+            self.Ry += y
 
         return x
 
@@ -118,9 +125,16 @@ class amm():
         for k in range(len(self.Rx)):
             assert np.abs(((x[k]/y[k])-self.Rx[k]/self.Ry[k])) < 1e-9, "pool " + str(k) + " has incorrect submission of tokens"
 
-        # ********************
-        #     fill in code
-        # ********************
+
+        # Upon submitting the correct amount of coins, the LP trader will then receive LP coins in the amount equal to
+        # l = (x/Rx)L = (y/Ry)L
+        # where L is the outstanding amount of LP coins issued by the pool prior to trader’s LP mint event.
+        l = (x / self.Rx) * self.L
+
+        # Further, after the LP mint event the reserves and outstanding LP coins are updated as follows
+        self.Rx += x
+        self.Ry += y
+        self.L += l
 
         return l
 
@@ -206,9 +220,13 @@ class amm():
         for k in range(len(self.L)):
             assert l[k] <= self.l[k], "you have insufficient LP tokens"
 
-        # ********************
-        #     fill in code
-        # ********************
+        x = self.l/self.L * self.Rx
+        y = self.l/self.L * self.Ry
+
+        # Update Rx, Ry, and L
+        self.Rx -= x
+        self.Ry -= y
+        self.L -= l
         
         return x, y
 
@@ -329,3 +347,16 @@ class amm():
             event_direction_t[k] = event_direction
 
         return pools, Rx_t, Ry_t, v_t, event_type_t, event_direction_t
+
+
+if __name__ == '__main__':
+    Rx0 = np.array([100, 100, 100], float)
+    Ry0 = np.array([1000, 1000, 1000], float)
+    phi = np.array([0.003, 0.003, 0.003], float)
+    pools = amm(Rx=Rx0, Ry=Ry0, phi=phi)
+
+    y = pools.swap_x_to_y([1, 0.5, 0.1], quote=False)
+
+    print(y)
+    print(pools.Rx)
+    print(pools.Ry)
